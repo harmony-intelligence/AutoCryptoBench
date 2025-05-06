@@ -1,0 +1,21 @@
+services:
+  default:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # ALLOW_PARALLEL_RUNS <START>
+    environment:
+      - VNC_PORT=${VNC_PORT}
+      - WIDTH=${SAMPLE_METADATA_WIDTH-1440}
+      - HEIGHT=${SAMPLE_METADATA_HEIGHT-810}
+    ports:
+      - "${VNC_PORT}:${VNC_PORT}"
+    # ALLOW_PARALLEL_RUNS <END>
+    healthcheck:
+      # "Healthy" is defined as the supervisorctl status command returning "RUNNING" for all services
+      # These are the services defined in the supervisord.conf file
+      test: ["CMD", "bash", "-c", "supervisorctl status | awk '{if ($2 != \"RUNNING\") exit 1}'"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s

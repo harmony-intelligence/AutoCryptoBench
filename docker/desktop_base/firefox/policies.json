@@ -1,0 +1,31 @@
+{
+    "policies": {
+        "DisableFirefoxStudies": true,
+        "DisablePocket": true,
+        "DisableTelemetry": true,
+        "DontCheckDefaultBrowser": true,
+        "ExtensionSettings": {},
+        "FirefoxHome": {
+            "Search": true,
+            "TopSites": false,
+            "Highlights": false,
+            "Pocket": false,
+            "Snippets": false
+        },
+        "UserMessaging": {
+            "WhatsNew": false,
+            "ExtensionRecommendations": false,
+            "FeatureRecommendations": false,
+            "UrlbarInterventions": false,
+            "SkipOnboarding": true,
+            "MoreFromMozilla": false
+        },
+        "Homepage": {
+            "StartPage": "none",
+            "URL": "about:blank"
+        },
+        "NewTabPage": false,
+        "OverrideFirstRunPage": "",
+        "OverridePostUpdatePage": ""
+    }
+}

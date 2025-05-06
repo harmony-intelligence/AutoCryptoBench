@@ -1,0 +1,28 @@
+# Artifacts from runs
+logs/
+
+# Scratch files
+zz*
+
+# Environment Variables
+.env
+
+# Virtual Environments
+.venv
+
+# Python Artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Test Artifacts
+.pytest_cache
+
+# Tool Artifacts
+.ruff_cache
+
+# Project-specific VS Code settings
+.vscode/
+
+# macOS operating system files
+.DS_Store

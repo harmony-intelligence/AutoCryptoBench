@@ -1,0 +1,46 @@
+services:
+  # The desktop setup for the agent
+  default:
+    build:
+      context: ../desktop_base
+      dockerfile: Dockerfile
+    # ALLOW_PARALLEL_RUNS <START>
+    environment:
+      - VNC_PORT=${VNC_PORT}
+      - WIDTH=${SAMPLE_METADATA_WIDTH-1440}
+      - HEIGHT=${SAMPLE_METADATA_HEIGHT-810}
+    ports:
+      - "${VNC_PORT}:${VNC_PORT}"
+    # ALLOW_PARALLEL_RUNS <END>
+    networks:
+      - backend
+    healthcheck:
+      # "Healthy" is defined as the supervisorctl status command returning "RUNNING" for all services
+      # These are the services defined in the supervisord.conf file
+      test: ["CMD", "bash", "-c", "supervisorctl status | awk '{if ($2 != \"RUNNING\") exit 1}'"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+    depends_on:
+      galaxy:
+        condition: service_healthy
+
+  # The mock website
+  galaxy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    expose:
+      - 80
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://galaxy/"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+
+networks:
+  backend:

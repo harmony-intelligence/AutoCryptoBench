@@ -1,0 +1,31 @@
+services:
+  # Just used to build image dependencies
+  desktop_base:
+    build:
+      context: ../desktop_base
+    image: desktop_base-default
+    # Inspect complains if containers exit with non-zero status code
+    entrypoint: ["true"]  # Simplest way to exit with 0 status code
+
+  default:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - desktop_base
+    environment:
+      - VNC_PORT=${VNC_PORT}
+      - WIDTH=${SAMPLE_METADATA_WIDTH-1440}
+      - HEIGHT=${SAMPLE_METADATA_HEIGHT-810}
+      - METAMASK_SEED_PHRASE=${METAMASK_SEED_PHRASE}
+      - METAMASK_PASSWORD=${METAMASK_PASSWORD}
+    ports:
+      - "${VNC_PORT}:${VNC_PORT}"
+    healthcheck:
+      # "Healthy" is defined as the supervisorctl status command returning "RUNNING" for all services
+      # These are the services defined in the supervisord.conf file
+      test: ["CMD", "bash", "-c", "supervisorctl status | awk '{if ($2 != \"RUNNING\") exit 1}'"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s

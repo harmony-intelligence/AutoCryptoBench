@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=XSettings
+Exec=sh -c "xset s off; xset -dpms; xset s noblank"
+Terminal=false
+Hidden=false
+X-XFCE-Autostart-Override=true

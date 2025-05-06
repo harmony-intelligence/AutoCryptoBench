@@ -1,0 +1,141 @@
+[project]
+name = "opmm"
+version = "0.1.0"
+description = ""
+readme = "README.md"
+requires-python = ">=3.12, <3.13"
+dependencies = [
+    "anthropic>=0.49.0",
+    "eth-account>=0.13.4",
+    "google-genai>=1.7.0",
+    "inspect-ai>=0.3.76",
+    "monero>=1.1.1",
+    "openai>=1.65.2",
+    "python-dotenv>=1.0.1",
+]
+
+[tool.uv]
+    dev-dependencies = [
+        "poethepoet>=0.29.0",
+        "pyright>=1.1.396",
+        "pytest>=8.3.3",
+        "ruff>=0.6.8",
+        "pytest-asyncio>=0.24.0",
+        "pytest-mock>=3.14.0",
+        "pytest-xdist>=3.6.1"
+    ]
+
+[build-system]
+    build-backend = "hatchling.build"
+    requires = ["hatchling"]
+
+[tool.hatch]
+    [tool.hatch.metadata]
+        allow-direct-references=true
+    
+    [tool.hatch.build.targets.wheel]
+        packages = ["agents", "utils"]
+
+[tool.poe]
+    [tool.poe.tasks]
+        [tool.poe.tasks.test]
+            help="Run all tests in /tests"
+            cmd="uv run pytest tests"
+        
+        [tool.poe.tasks.fast]
+            help="Run the fast tests in /tests"
+            cmd="uv run pytest -m \"not calls_llm and not slow\" tests"
+
+        [tool.poe.tasks.typecheck]
+            help="Run the PyRight Typechecker"
+            cmd="uv run pyright"
+        
+        [tool.poe.tasks.format]
+            help="Run the ruff formatter with autofixing"
+            cmd="uv run ruff format ."
+        
+        [tool.poe.tasks.lint]
+            help="Run the ruff linter with autofixing"
+            cmd="uv run ruff check . --fix"
+
+        [tool.poe.tasks.lockcheck]
+            help="Check that uv.lock and pyproject.toml are in sync"
+            cmd="uv lock --locked --offline"
+
+        [tool.poe.tasks.check]
+            help="Run all checks"
+            ignore_fail=false
+            sequence=["lockcheck", "format", "lint", "typecheck"]
+
+        # OPMM specific poe commands for convenience
+        [tool.poe.tasks.db]
+            help="Alias for `docker compose --env-file .env -f docker/desktop_base/docker-compose.yml`"
+            cmd="docker compose --env-file .env -f docker/desktop_base/docker-compose.yml"
+
+        [tool.poe.tasks.dm]
+            help="Alias for `docker compose --env-file .env -f docker/desktop_metamask/docker-compose.yml`"
+            cmd="docker compose --env-file .env -f docker/desktop_metamask/docker-compose.yml"
+
+[tool.pytest]
+    [tool.pytest.ini_options]
+        addopts=[
+            # Use modern Python imports (i.e., don't require __init__.py files everywhere)
+            "--import-mode=importlib",
+            # Require markers to be explicitly defined
+            "--strict-markers",
+        ]
+        asyncio_default_fixture_loop_scope="function"
+        asyncio_mode="auto"
+        filterwarnings = [
+            "ignore:.*'imghdr' is deprecated.*:DeprecationWarning"  # Deprecated for Python 3.13
+        ]
+        markers=[
+            "calls_llm: tests that make language model api calls",
+            "slow: slow tests",
+        ]
+        pythonpath="."
+
+[tool.ruff]
+    exclude=[".venv",]
+    line-length=100
+    [tool.ruff.lint]
+        ignore=[
+            "D10",   # Require docstrings for all public methods
+            "E501",  # Line too long
+            "N816",  # Global variable should be snake_case (prevents acronyms)
+            "N999",  # Module variable should be snake_case (prevents acronyms)
+            "S101",  # Use of assert detected (needed for testing)
+            "S311",  # Pseudo-random generators not suitable for cryptographic purposes (not our use case)
+            "S603",  # subprocess call - check for execution of untrusted input (we need this to run ruff / pyright from python)
+            "S607",  # Starting a process with a partial executable path (we need this to run ruff / pyright from python)
+            "A004",  # Shadowing a PYthon built-in e.g. "from inspect_ai import eval"
+        ]
+        select=[
+            "A",      # flake8-builtins (detects use of python builtins)
+            # "ANN201", # Missing return type annotation
+            "ASYNC",  # flake8-async (common async issues)
+            "B",      # flake8-bugbear (common bugs and design problems)
+            "C",      # mccabe (complexity checker)
+            "D",      # pydocstyle (docstring style checker)
+            "E",      # pycodestyle errors (PEP8 code style requirements)
+            "F",      # pyflakes (detects coding errors)
+            "I",      # isort (import sorting)
+            "N",      # flake8 (variable naming conventions)
+            "S",      # flake8-bandit (security issues)
+            "UP",     # Conform to latest Python PEP style guidelines
+            "W",      # pycodestyle warnings (PEP8 code style requirements)
+        ]
+
+        [tool.ruff.lint.pydocstyle]
+            convention="google"
+
+[tool.pyright]
+    exclude=[".venv",]
+    include=["agents", "tasks", "tests", "utils"]
+    reportAssertAlwaysTrue=true
+    reportDeprecated=true
+    reportMissingReturnType=true
+    reportReturnType=true
+    reportUnusedImport=true
+    reportWildcardImportFromLibrary=true
+    typeCheckingMode="strict"
